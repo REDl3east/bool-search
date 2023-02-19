@@ -195,7 +195,25 @@ private:
         created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
         created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::ID, id_or_paren_token));
       } else if (id_or_paren_token.kind == TokenKind::OPEN_PAREN) {
-        assert(false && "wtf");
+        created_node = std::make_shared<Node>(node, NodeKind::EXPR);
+        created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
+        
+        auto expr_node = std::make_shared<Node>(created_node, NodeKind::EXPR);
+        created_node.get()->add_child(expr_node);
+      
+
+        tokenizer.next();
+        if (!parse_expr(expr_node)) {
+          assert(false);
+          return false;
+        }
+
+        Token close_paren_token = tokenizer.current_token;
+
+        if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
+          assert(false);
+          return false;
+        }
       } else {
         assert(false && "wtf");
         return false;
@@ -203,14 +221,14 @@ private:
     } else if (current_token.kind == TokenKind::OPEN_PAREN) {
       created_node = std::make_shared<Node>(node, NodeKind::EXPR);
       tokenizer.next();
-      if(!parse_expr(created_node)){
+      if (!parse_expr(created_node)) {
         assert(false);
         return false;
       }
 
       Token close_paren_token = tokenizer.current_token;
 
-      if(close_paren_token.kind != TokenKind::CLOSE_PAREN){
+      if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
         assert(false);
         return false;
       }
@@ -268,7 +286,7 @@ private:
 };
 
 int main(int argc, char** argv) {
-  std::string_view input = "dalton or (clayton and dalton or bob) and evan";
+  std::string_view input = "(not cats) and (not dogs)";
   Parser p(input);
   p.parse();
 
