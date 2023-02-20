@@ -93,7 +93,7 @@ private:
       created_node = std::make_shared<Node>(node, NodeKind::ID, current_token);
     } else if (current_token.kind == TokenKind::NOT) {
       Token id_or_paren_token = tokenizer.next();
-      if (id_or_paren_token.kind == TokenKind::ID || id_or_paren_token.kind == TokenKind::NOT || id_or_paren_token.kind == TokenKind::AND || id_or_paren_token.kind == TokenKind::OR) {
+      if (id_or_paren_token.kind == TokenKind::ID || id_or_paren_token.kind == TokenKind::NOT || id_or_paren_token.kind == TokenKind::AND || id_or_paren_token.kind == TokenKind::OR || id_or_paren_token.kind == TokenKind::CLOSE_PAREN) {
         created_node = std::make_shared<Node>(node, NodeKind::EXPR);
         created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
         created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::ID, id_or_paren_token));
@@ -105,7 +105,7 @@ private:
         created_node.get()->add_child(expr_node);
 
         tokenizer.next();
-        if (!parse_expr(expr_node)) {
+        if (!parse_expr(expr_node, 0)) {
           assert(false);
           return false;
         }
@@ -152,6 +152,7 @@ private:
                                                                                                                             : -1;
 
     if (new_precedence == -1) {
+      std::cerr << tokenizer.current_token.text << '\n';
       assert(false && "wtf");
       return false;
     }

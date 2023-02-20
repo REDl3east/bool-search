@@ -58,24 +58,20 @@ public:
 
     input.remove_prefix(space_pos);
 
-    if (input.front() == '(') {
-      input.remove_prefix(1);
-      current_token = {TokenKind::OPEN_PAREN, "("};
-      return current_token;
-    } else if (input.front() == ')') {
-      input.remove_prefix(1);
-      current_token = {TokenKind::CLOSE_PAREN, "("};
-      return current_token;
-    }
-
-    auto id_pos = input.find_first_of("() ");
+    auto id_pos = input.find_first_of(" ");
     if (id_pos == std::string_view::npos) {
-      if (input.substr(0, id_pos) == "and") {
-        current_token = {TokenKind::AND, input.substr(0, input.size())};
+      if (input.substr(0, input.size()) == "and") {
+        current_token = {TokenKind::AND, "and"};
       } else if (input.substr(0, input.size()) == "or") {
-        current_token = {TokenKind::OR, input.substr(0, input.size())};
+        current_token = {TokenKind::OR, "or"};
       } else if (input.substr(0, input.size()) == "not") {
-        current_token = {TokenKind::NOT, input.substr(0, input.size())};
+        current_token = {TokenKind::NOT, "not"};
+      } else if (input.substr(0, input.size()) == "\\(") {
+        current_token = {TokenKind::ID, "("};
+      } else if (input.substr(0, input.size()) == "(") {
+        current_token = {TokenKind::OPEN_PAREN, "("};
+      } else if (input.substr(0, input.size()) == ")") {
+        current_token = {TokenKind::CLOSE_PAREN, ")"};
       } else {
         current_token = {TokenKind::ID, input.substr(0, input.size())};
       }
@@ -84,11 +80,17 @@ public:
     }
 
     if (input.substr(0, id_pos) == "and") {
-      current_token = {TokenKind::AND, input.substr(0, id_pos)};
+      current_token = {TokenKind::AND, "and"};
     } else if (input.substr(0, id_pos) == "or") {
-      current_token = {TokenKind::OR, input.substr(0, id_pos)};
+      current_token = {TokenKind::OR, "or"};
     } else if (input.substr(0, id_pos) == "not") {
-      current_token = {TokenKind::NOT, input.substr(0, id_pos)};
+      current_token = {TokenKind::NOT, "not"};
+    } else if (input.substr(0, id_pos) == "\\(") {
+      current_token = {TokenKind::ID, "("};
+    } else if (input.substr(0, id_pos) == "(") {
+      current_token = {TokenKind::OPEN_PAREN, "("};
+    } else if (input.substr(0, id_pos) == ")") {
+      current_token = {TokenKind::CLOSE_PAREN, ")"};
     } else {
       current_token = {TokenKind::ID, input.substr(0, id_pos)};
     }
