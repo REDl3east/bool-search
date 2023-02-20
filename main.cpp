@@ -7,7 +7,10 @@
 int main(int argc, char** argv) {
   std::string_view input = "not cats and not dogs or pizza";
   Parser p(input);
-  p.parse();
+  if(!p.parse()){
+    return 1;
+  }
 
-  p.dot(std::string(input).c_str());
+  p.dot(input);
+  return 1;
 }
