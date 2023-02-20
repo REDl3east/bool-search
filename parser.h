@@ -61,9 +61,9 @@ public:
   }
 
   void dot_add_label(std::shared_ptr<Node> node) {
-    if (!node) {
+    if (node) {
       if (node.get()->kind == NodeKind::ID || node.get()->kind == NodeKind::NOT || node.get()->kind == NodeKind::OPERATOR) {
-        std::cout << "\t" << (size_t)node.get() << "[label=\"" << node.get()->token.value().text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
+        std::cout << "\t" << (size_t)node.get() << "[label=\"" << node.get()->token.value_or(Token{TokenKind::UNKNOWN, "Unknown"}).text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
       } else {
         std::cout << "\t" << (size_t)node.get() << " [label=\"EXPR\" shape=\"box\"]\n";
       }
