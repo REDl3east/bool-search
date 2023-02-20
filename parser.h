@@ -21,7 +21,7 @@ enum class NodeKind {
 
 struct Node {
   Node(std::weak_ptr<Node> parent, NodeKind kind) : parent(parent), kind(kind) {}
-  Node(std::shared_ptr<Node> parent, NodeKind kind, Token token) : parent(parent), kind(kind), token(token) {}
+  Node(std::weak_ptr<Node> parent, NodeKind kind, Token token) : parent(parent), kind(kind), token(token) {}
   Node(NodeKind kind) : kind(kind) {}
 
   void add_child(std::shared_ptr<Node> child) {
