@@ -13,10 +13,20 @@ int main(int argc, char** argv) {
 
   std::string_view input(argv[1]);
   Parser p(input);
-  if (!p.parse()) {
+  auto status = p.parse();
+  if (status != ParseStatus::OK) {
+    if (status == ParseStatus::INVALID_TOKEN) {
+      auto token = p.get_current_token();
+      std::cerr << "Invalid Token: " << token.text << '\n';
+    } else if (status == ParseStatus::NO_CLOSE_PAREN) {
+      std::cerr << "Missing a closing parenthases" << '\n';
+    } else if (status == ParseStatus::UNKNOWN) {
+      std::cerr << "Encountered an unknown error" << '\n';
+    }
+
     return 1;
   }
 
   p.dot(input);
-  return 1;
+  return 0;
 }
