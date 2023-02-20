@@ -19,9 +19,9 @@ int main(int argc, char** argv) {
       auto token = p.get_current_token();
       std::cerr << "Invalid Token: " << token.text << '\n';
     } else if (status == ParseStatus::NO_CLOSE_PAREN) {
-      std::cerr << "Missing a closing parenthases" << '\n';
+      std::cerr << "Missing a closing parenthases\n";
     } else if (status == ParseStatus::UNKNOWN) {
-      std::cerr << "Encountered an unknown error" << '\n';
+      std::cerr << "Encountered an unknown error\n";
     }
 
     return 1;
