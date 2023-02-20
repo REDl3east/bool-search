@@ -20,15 +20,15 @@ enum class NodeKind {
 };
 
 struct Node {
-  Node(std::shared_ptr<Node> parent, NodeKind kind) : parent(parent), kind(kind) {}
+  Node(std::weak_ptr<Node> parent, NodeKind kind) : parent(parent), kind(kind) {}
   Node(std::shared_ptr<Node> parent, NodeKind kind, Token token) : parent(parent), kind(kind), token(token) {}
-  Node(NodeKind kind) : parent(nullptr), kind(kind) {}
+  Node(NodeKind kind) : kind(kind) {}
 
   void add_child(std::shared_ptr<Node> child) {
     children.push_back(child);
   }
   NodeKind kind;
-  std::shared_ptr<Node> parent;
+  std::weak_ptr<Node> parent;
   // for non-terminal nodes
   std::vector<std::shared_ptr<Node>> children;
   // for terminal nodes
@@ -45,40 +45,40 @@ public:
     return parse_expr(root);
   }
 
-  void dot(const char* label) {
+  void dot(std::string_view label) {
     dot_recurse(root, label);
   }
 
-  void dot_recurse(std::shared_ptr<Node> node, const char* label) {
-    fprintf(stdout, "digraph tree {\n");
+  void dot_recurse(std::shared_ptr<Node> node, std::string_view label) {
+    std::cout << "digraph tree {\n";
 
-    fprintf(stdout, "\tlabel=\"%s\"\n", label);
-    fprintf(stdout, "\tlabelloc=\"t\";\n");
-    fprintf(stdout, "\tfontname=\"Helvetica,Arial,sans-serif\"\n");
+    std::cout << "\tlabel=\"" << label << "\"\n";
+    std::cout << "\tlabelloc=\"t\";\n";
+    std::cout << "\tfontname=\"Helvetica,Arial,sans-serif\"\n";
     dot_add_label(node);
     dot_add_path(node);
-    fprintf(stdout, "}\n");
+    std::cout << "}\n";
   }
 
   void dot_add_label(std::shared_ptr<Node> node) {
-    if (node.get() != NULL) {
+    if (!node) {
       if (node.get()->kind == NodeKind::ID || node.get()->kind == NodeKind::NOT || node.get()->kind == NodeKind::OPERATOR) {
-        fprintf(stdout, "\t%ld [label=\"%s\" shape=\"%s\" fontsize=\"%s\" fontcolor=\"%s\"]\n", (size_t)node.get(), std::string(node.get()->token.value().text).c_str(), "plain", "18", "orangered3");
+        std::cout << "\t" << (size_t)node.get() << "[label=\"" << node.get()->token.value().text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
       } else {
-        fprintf(stdout, "\t%ld [label=\"%s\" shape=\"%s\"]\n", (size_t)node.get(), "EXPR", "box");
+        std::cout << "\t" << (size_t)node.get() << " [label=\"EXPR\" shape=\"box\"]\n";
       }
     }
 
-    for (auto&& i : node.get()->children) {
+    for (auto i : node.get()->children) {
       dot_add_label(i);
     }
   }
 
   void dot_add_path(std::shared_ptr<Node> node) {
-    if (node.get()->parent != NULL) {
-      fprintf(stdout, "\t%ld -> %ld;\n", (size_t)node.get()->parent.get(), (size_t)node.get());
+    if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
+      std::cout << "\t" << (size_t)spt.get() << " -> " << (size_t)node.get() << "\n";
     }
-    for (auto&& i : node.get()->children) {
+    for (auto i : node.get()->children) {
       dot_add_path(i);
     }
   }
@@ -166,9 +166,13 @@ private:
       if (precedence == 1) {
         node.get()->add_child(created_node);
         created_node.get()->parent = node;
-        node.get()->parent.get()->add_child(std::make_shared<Node>(node.get()->parent, NodeKind::OPERATOR, tokenizer.current_token));
-        tokenizer.next();
-        return parse_expr(node.get()->parent, 0);
+
+        if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
+          spt.get()->add_child(std::make_shared<Node>(spt, NodeKind::OPERATOR, tokenizer.current_token));
+          tokenizer.next();
+          return parse_expr(spt, 0);
+        }
+        return false;
       } else {
         std::shared_ptr<Node> expr_node = std::make_shared<Node>(node, NodeKind::EXPR);
         node.get()->add_child(expr_node);
