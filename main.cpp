@@ -2,9 +2,9 @@
 #include "parser.h"
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
-    std::cerr << "Expected 1 arguement, got " << argc - 1 << '\n';
-    std::cerr << "Usage: " << argv[0] << "INPUT\n";
+  if (argc != 3) {
+    std::cerr << "Expected 2 arguement, got " << argc - 1 << '\n';
+    std::cerr << "Usage: " << argv[0] << "INPUT SEARCH\n";
     return 1;
   }
 
@@ -24,8 +24,22 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  std::string dot_graph = p.dot(input);
-  std::cout << dot_graph;
+  bool eval = p.eval(argv[2]);
+
+  auto& id_map = p.get_id_map();
+
+  std::cout << "Input:  " << input << '\n';
+  std::cout << "Search: " << argv[2] << '\n';
+  std::cout << '\n';
+
+  for(auto& i : id_map){
+    std::cout << i.first << ": " << (i.second ? "true" : "false") << '\n';
+  }
+
+  std::cout << "\nresult: " << (eval ? "true" : "false") << '\n';
+
+  // std::string dot_graph = p.dot(input);
+  // std::cout << dot_graph;
 
   return 0;
 }
