@@ -3,12 +3,11 @@
 
 #include "tokenizer.h"
 
-#include <cassert>
-#include <cstdio>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <vector>
 
 enum class NodeKind {
@@ -48,14 +47,14 @@ public:
   ParseStatus parse();
   Token get_current_token();
 
-  void dot(std::string_view label);
+  std::string dot(std::string_view label);
 
 private:
   ParseStatus parse_expr(std::shared_ptr<Node> node, int precedence = 0);
 
-  void dot_recurse(std::shared_ptr<Node> node, std::string_view label);
-  void dot_add_label(std::shared_ptr<Node> node);
-  void dot_add_path(std::shared_ptr<Node> node);
+  void dot_recurse(std::shared_ptr<Node> node, std::string_view label, std::stringstream& ss);
+  void dot_add_label(std::shared_ptr<Node> node, std::stringstream& ss);
+  void dot_add_path(std::shared_ptr<Node> node, std::stringstream& ss);
 
   Tokenizer tokenizer;
   std::shared_ptr<Node> root;
@@ -170,41 +169,43 @@ Token Parser::get_current_token() {
   return tokenizer.current_token;
 }
 
-void Parser::dot(std::string_view label) {
-  dot_recurse(root, label);
+std::string Parser::dot(std::string_view label) {
+  std::stringstream ss;
+  dot_recurse(root, label, ss);
+  return ss.str();
 }
 
-void Parser::dot_recurse(std::shared_ptr<Node> node, std::string_view label) {
-  std::cout << "digraph tree {\n";
+void Parser::dot_recurse(std::shared_ptr<Node> node, std::string_view label, std::stringstream& ss) {
+  ss << "digraph tree {\n";
 
-  std::cout << "\tlabel=\"" << label << "\"\n";
-  std::cout << "\tlabelloc=\"t\";\n";
-  std::cout << "\tfontname=\"Helvetica,Arial,sans-serif\"\n";
-  dot_add_label(node);
-  dot_add_path(node);
-  std::cout << "}\n";
+  ss << "\tlabel=\"" << label << "\"\n";
+  ss << "\tlabelloc=\"t\";\n";
+  ss << "\tfontname=\"Helvetica,Arial,sans-serif\"\n";
+  dot_add_label(node, ss);
+  dot_add_path(node, ss);
+  ss << "}\n";
 }
 
-void Parser::dot_add_label(std::shared_ptr<Node> node) {
+void Parser::dot_add_label(std::shared_ptr<Node> node, std::stringstream& ss) {
   if (node) {
     if (node.get()->kind == NodeKind::ID || node.get()->kind == NodeKind::NOT || node.get()->kind == NodeKind::OPERATOR) {
-      std::cout << "\t" << (size_t)node.get() << " [label=\"" << node.get()->token.value_or(Token{TokenKind::UNKNOWN, "Unknown"}).text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
+      ss << "\t" << (size_t)node.get() << " [label=\"" << node.get()->token.value_or(Token{TokenKind::UNKNOWN, "Unknown"}).text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
     } else {
-      std::cout << "\t" << (size_t)node.get() << " [label=\"EXPR\" shape=\"box\"]\n";
+      ss << "\t" << (size_t)node.get() << " [label=\"EXPR\" shape=\"box\"]\n";
     }
   }
 
   for (auto i : node.get()->children) {
-    dot_add_label(i);
+    dot_add_label(i, ss);
   }
 }
 
-void Parser::dot_add_path(std::shared_ptr<Node> node) {
+void Parser::dot_add_path(std::shared_ptr<Node> node, std::stringstream& ss) {
   if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
-    std::cout << "\t" << (size_t)spt.get() << " -> " << (size_t)node.get() << "\n";
+    ss << "\t" << (size_t)spt.get() << " -> " << (size_t)node.get() << "\n";
   }
   for (auto i : node.get()->children) {
-    dot_add_path(i);
+    dot_add_path(i, ss);
   }
 }
 

@@ -24,6 +24,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  p.dot(input);
+  std::string dot_graph = p.dot(input);
+  std::cout << dot_graph;
+
   return 0;
 }
