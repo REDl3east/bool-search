@@ -23,9 +23,23 @@ struct Node {
   Node(std::weak_ptr<Node> parent, NodeKind kind, Token token) : parent(parent), kind(kind), token(token) {}
   Node(NodeKind kind) : kind(kind) {}
 
-  void add_child(std::shared_ptr<Node> child) {
-    children.push_back(child);
+  void add_child(std::weak_ptr<Node> parent, NodeKind kind) {
+    children.push_back(std::make_unique<Node>(parent, kind));
   }
+
+  void add_child(std::weak_ptr<Node> parent, NodeKind kind, Token token) {
+    children.push_back(std::make_unique<Node>(parent, kind, token));
+  }
+
+  void add_child(NodeKind kind) {
+    children.push_back(std::make_unique<Node>(kind));
+  }
+
+  void add_child(std::weak_ptr<Node> parent, std::shared_ptr<Node> child) {
+    children.push_back(child);
+    child->parent = parent;
+  }
+
   NodeKind kind;
   std::weak_ptr<Node> parent;
   // for non-terminal nodes
@@ -79,14 +93,14 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
     Token id_or_paren_token = tokenizer.next();
     if (id_or_paren_token.kind == TokenKind::ID || id_or_paren_token.kind == TokenKind::NOT || id_or_paren_token.kind == TokenKind::AND || id_or_paren_token.kind == TokenKind::OR || id_or_paren_token.kind == TokenKind::CLOSE_PAREN) {
       created_node = std::make_shared<Node>(node, NodeKind::EXPR);
-      created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
-      created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::ID, id_or_paren_token));
+      created_node.get()->add_child(created_node, NodeKind::NOT, current_token);
+      created_node.get()->add_child(created_node, NodeKind::ID, id_or_paren_token);
     } else if (id_or_paren_token.kind == TokenKind::OPEN_PAREN) {
       created_node = std::make_shared<Node>(node, NodeKind::EXPR);
-      created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
+      created_node.get()->add_child(created_node, NodeKind::NOT, current_token);
 
       auto expr_node = std::make_shared<Node>(created_node, NodeKind::EXPR);
-      created_node.get()->add_child(expr_node);
+      created_node.get()->add_child(created_node, expr_node);
 
       tokenizer.next();
       auto status = parse_expr(expr_node);
@@ -123,8 +137,7 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
   tokenizer.next();
 
   if (tokenizer.current_token.kind == TokenKind::END_OF || tokenizer.current_token.kind == TokenKind::CLOSE_PAREN) {
-    node.get()->add_child(created_node);
-    created_node.get()->parent = node;
+    node.get()->add_child(node, created_node);
     return ParseStatus::OK;
   }
 
@@ -135,28 +148,25 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
   }
 
   if (precedence == new_precedence) {
-    node.get()->add_child(created_node);
-    created_node.get()->parent = node;
-    node.get()->add_child(std::make_shared<Node>(node, NodeKind::OPERATOR, tokenizer.current_token));
+    node.get()->add_child(node, created_node);
+    node.get()->add_child(node, NodeKind::OPERATOR, tokenizer.current_token);
     tokenizer.next();
     return parse_expr(node, precedence);
   } else {
     if (precedence == 1) {
-      node.get()->add_child(created_node);
-      created_node.get()->parent = node;
+      node.get()->add_child(node, created_node);
 
       if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
-        spt.get()->add_child(std::make_shared<Node>(spt, NodeKind::OPERATOR, tokenizer.current_token));
+        spt.get()->add_child(spt, NodeKind::OPERATOR, tokenizer.current_token);
         tokenizer.next();
         return parse_expr(spt, 0);
       }
       return ParseStatus::UNKNOWN;
     } else {
       std::shared_ptr<Node> expr_node = std::make_shared<Node>(node, NodeKind::EXPR);
-      node.get()->add_child(expr_node);
-      expr_node.get()->add_child(created_node);
-      created_node.get()->parent = expr_node;
-      expr_node.get()->add_child(std::make_shared<Node>(expr_node, NodeKind::OPERATOR, tokenizer.current_token));
+      node.get()->add_child(node, expr_node);
+      expr_node.get()->add_child(expr_node, created_node);
+      expr_node.get()->add_child(expr_node, NodeKind::OPERATOR, tokenizer.current_token);
       tokenizer.next();
       return parse_expr(expr_node, 1);
     }
