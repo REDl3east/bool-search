@@ -77,7 +77,33 @@ public:
 private:
   ParseStatus parse_expr(std::shared_ptr<Node> node, int precedence = 0);
 
-  bool eval_tree(std::shared_ptr<Node> node){
+  bool eval_tree(std::shared_ptr<Node> node) {
+    if (!node) {
+      std::cerr << "node is null value\n";
+      return false;
+    }
+    Node* node_ptr = node.get();
+    if (node_ptr->children.size() == 1) {
+      return eval_tree(node_ptr->children[0]);
+    } else if (node_ptr->kind == NodeKind::ID) {
+      if (!node_ptr->token.has_value()) {
+        std::cerr << "token has no value\n";
+        return false;
+      }
+      std::cout << node_ptr->token.value().text << '\n';
+      return id_map.at(node_ptr->token.value().text);
+    } else if (node_ptr->children.size() == 2 && node_ptr->children[0] && node_ptr->children[1]) {
+      auto* first_child  = node_ptr->children[0].get();
+      auto* second_child = node_ptr->children[1].get();
+      if (first_child->kind == NodeKind::NOT && (second_child->kind == NodeKind::EXPR || second_child->kind == NodeKind::ID)) {
+        return !eval_tree(node_ptr->children[1]);
+      }
+      std::cerr << "Don't know how to handle node\n";
+      return false;
+    } else {
+      std::cerr << "Don't know how to handle node\n";
+      return false;
+    }
     return true;
   }
 
