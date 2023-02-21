@@ -44,61 +44,53 @@ enum class ParseStatus {
 
 class Parser {
 public:
-  Parser(std::string_view input) : tokenizer(input) {
-    root          = std::make_shared<Node>(NodeKind::EXPR);
-    tokenizer.next();
-  }
-  ParseStatus parse() {
-    return parse_expr(root);
-  }
+  Parser(std::string_view input);
+  ParseStatus parse();
+  Token get_current_token();
 
-  void dot(std::string_view label) {
-    dot_recurse(root, label);
-  }
-
-  Token get_current_token(){
-    return tokenizer.current_token;
-  }
+  void dot(std::string_view label);
 
 private:
-  ParseStatus parse_expr(std::shared_ptr<Node> node, int precedence = 0) {
-    std::shared_ptr<Node> created_node;
+  ParseStatus parse_expr(std::shared_ptr<Node> node, int precedence = 0);
 
-    Token current_token = tokenizer.current_token;
+  void dot_recurse(std::shared_ptr<Node> node, std::string_view label);
+  void dot_add_label(std::shared_ptr<Node> node);
+  void dot_add_path(std::shared_ptr<Node> node);
 
-    if (current_token.kind == TokenKind::ID || current_token.kind == TokenKind::AND || current_token.kind == TokenKind::OR) {
-      created_node = std::make_shared<Node>(node, NodeKind::ID, current_token);
-    } else if (current_token.kind == TokenKind::NOT) {
-      Token id_or_paren_token = tokenizer.next();
-      if (id_or_paren_token.kind == TokenKind::ID || id_or_paren_token.kind == TokenKind::NOT || id_or_paren_token.kind == TokenKind::AND || id_or_paren_token.kind == TokenKind::OR || id_or_paren_token.kind == TokenKind::CLOSE_PAREN) {
-        created_node = std::make_shared<Node>(node, NodeKind::EXPR);
-        created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
-        created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::ID, id_or_paren_token));
-      } else if (id_or_paren_token.kind == TokenKind::OPEN_PAREN) {
-        created_node = std::make_shared<Node>(node, NodeKind::EXPR);
-        created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
+  Tokenizer tokenizer;
+  std::shared_ptr<Node> root;
+};
 
-        auto expr_node = std::make_shared<Node>(created_node, NodeKind::EXPR);
-        created_node.get()->add_child(expr_node);
+Parser::Parser(std::string_view input) : tokenizer(input) {
+  root = std::make_shared<Node>(NodeKind::EXPR);
+  tokenizer.next();
+}
+ParseStatus Parser::parse() {
+  return parse_expr(root);
+}
 
-        tokenizer.next();
-        auto status = parse_expr(expr_node);
-        if (status != ParseStatus::OK) {
-          return status;
-        }
+ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
+  std::shared_ptr<Node> created_node;
 
-        Token close_paren_token = tokenizer.current_token;
+  Token current_token = tokenizer.current_token;
 
-        if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
-          return ParseStatus::NO_CLOSE_PAREN;
-        }
-      } else {
-        return ParseStatus::INVALID_TOKEN;
-      }
-    } else if (current_token.kind == TokenKind::OPEN_PAREN) {
+  if (current_token.kind == TokenKind::ID || current_token.kind == TokenKind::AND || current_token.kind == TokenKind::OR) {
+    created_node = std::make_shared<Node>(node, NodeKind::ID, current_token);
+  } else if (current_token.kind == TokenKind::NOT) {
+    Token id_or_paren_token = tokenizer.next();
+    if (id_or_paren_token.kind == TokenKind::ID || id_or_paren_token.kind == TokenKind::NOT || id_or_paren_token.kind == TokenKind::AND || id_or_paren_token.kind == TokenKind::OR || id_or_paren_token.kind == TokenKind::CLOSE_PAREN) {
       created_node = std::make_shared<Node>(node, NodeKind::EXPR);
+      created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
+      created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::ID, id_or_paren_token));
+    } else if (id_or_paren_token.kind == TokenKind::OPEN_PAREN) {
+      created_node = std::make_shared<Node>(node, NodeKind::EXPR);
+      created_node.get()->add_child(std::make_shared<Node>(created_node, NodeKind::NOT, current_token));
+
+      auto expr_node = std::make_shared<Node>(created_node, NodeKind::EXPR);
+      created_node.get()->add_child(expr_node);
+
       tokenizer.next();
-      auto status = parse_expr(created_node);
+      auto status = parse_expr(expr_node);
       if (status != ParseStatus::OK) {
         return status;
       }
@@ -108,93 +100,112 @@ private:
       if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
         return ParseStatus::NO_CLOSE_PAREN;
       }
-
     } else {
       return ParseStatus::INVALID_TOKEN;
     }
-
+  } else if (current_token.kind == TokenKind::OPEN_PAREN) {
+    created_node = std::make_shared<Node>(node, NodeKind::EXPR);
     tokenizer.next();
-
-    if (tokenizer.current_token.kind == TokenKind::END_OF || tokenizer.current_token.kind == TokenKind::CLOSE_PAREN) {
-      node.get()->add_child(created_node);
-      created_node.get()->parent = node;
-      return ParseStatus::OK;
+    auto status = parse_expr(created_node);
+    if (status != ParseStatus::OK) {
+      return status;
     }
 
-    int new_precedence = tokenizer.current_token.kind == TokenKind::OR ? 0 : tokenizer.current_token.kind == TokenKind::AND ? 1
-                                                                                                                            : -1;
+    Token close_paren_token = tokenizer.current_token;
 
-    if (new_precedence == -1) {
-      return ParseStatus::INVALID_TOKEN;
+    if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
+      return ParseStatus::NO_CLOSE_PAREN;
     }
 
-    if (precedence == new_precedence) {
-      node.get()->add_child(created_node);
-      created_node.get()->parent = node;
-      node.get()->add_child(std::make_shared<Node>(node, NodeKind::OPERATOR, tokenizer.current_token));
-      tokenizer.next();
-      return parse_expr(node, precedence);
-    } else {
-      if (precedence == 1) {
-        node.get()->add_child(created_node);
-        created_node.get()->parent = node;
+  } else {
+    return ParseStatus::INVALID_TOKEN;
+  }
 
-        if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
-          spt.get()->add_child(std::make_shared<Node>(spt, NodeKind::OPERATOR, tokenizer.current_token));
-          tokenizer.next();
-          return parse_expr(spt, 0);
-        }
-        return ParseStatus::UNKNOWN;
-      } else {
-        std::shared_ptr<Node> expr_node = std::make_shared<Node>(node, NodeKind::EXPR);
-        node.get()->add_child(expr_node);
-        expr_node.get()->add_child(created_node);
-        created_node.get()->parent = expr_node;
-        expr_node.get()->add_child(std::make_shared<Node>(expr_node, NodeKind::OPERATOR, tokenizer.current_token));
-        tokenizer.next();
-        return parse_expr(expr_node, 1);
-      }
-    }
+  tokenizer.next();
 
+  if (tokenizer.current_token.kind == TokenKind::END_OF || tokenizer.current_token.kind == TokenKind::CLOSE_PAREN) {
+    node.get()->add_child(created_node);
+    created_node.get()->parent = node;
     return ParseStatus::OK;
   }
 
-  void dot_recurse(std::shared_ptr<Node> node, std::string_view label) {
-    std::cout << "digraph tree {\n";
+  int new_precedence = tokenizer.current_token.kind == TokenKind::OR ? 0 : tokenizer.current_token.kind == TokenKind::AND ? 1 : -1;
 
-    std::cout << "\tlabel=\"" << label << "\"\n";
-    std::cout << "\tlabelloc=\"t\";\n";
-    std::cout << "\tfontname=\"Helvetica,Arial,sans-serif\"\n";
-    dot_add_label(node);
-    dot_add_path(node);
-    std::cout << "}\n";
+  if (new_precedence == -1) {
+    return ParseStatus::INVALID_TOKEN;
   }
 
-  void dot_add_label(std::shared_ptr<Node> node) {
-    if (node) {
-      if (node.get()->kind == NodeKind::ID || node.get()->kind == NodeKind::NOT || node.get()->kind == NodeKind::OPERATOR) {
-        std::cout << "\t" << (size_t)node.get() << " [label=\"" << node.get()->token.value_or(Token{TokenKind::UNKNOWN, "Unknown"}).text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
-      } else {
-        std::cout << "\t" << (size_t)node.get() << " [label=\"EXPR\" shape=\"box\"]\n";
+  if (precedence == new_precedence) {
+    node.get()->add_child(created_node);
+    created_node.get()->parent = node;
+    node.get()->add_child(std::make_shared<Node>(node, NodeKind::OPERATOR, tokenizer.current_token));
+    tokenizer.next();
+    return parse_expr(node, precedence);
+  } else {
+    if (precedence == 1) {
+      node.get()->add_child(created_node);
+      created_node.get()->parent = node;
+
+      if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
+        spt.get()->add_child(std::make_shared<Node>(spt, NodeKind::OPERATOR, tokenizer.current_token));
+        tokenizer.next();
+        return parse_expr(spt, 0);
       }
-    }
-
-    for (auto i : node.get()->children) {
-      dot_add_label(i);
-    }
-  }
-
-  void dot_add_path(std::shared_ptr<Node> node) {
-    if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
-      std::cout << "\t" << (size_t)spt.get() << " -> " << (size_t)node.get() << "\n";
-    }
-    for (auto i : node.get()->children) {
-      dot_add_path(i);
+      return ParseStatus::UNKNOWN;
+    } else {
+      std::shared_ptr<Node> expr_node = std::make_shared<Node>(node, NodeKind::EXPR);
+      node.get()->add_child(expr_node);
+      expr_node.get()->add_child(created_node);
+      created_node.get()->parent = expr_node;
+      expr_node.get()->add_child(std::make_shared<Node>(expr_node, NodeKind::OPERATOR, tokenizer.current_token));
+      tokenizer.next();
+      return parse_expr(expr_node, 1);
     }
   }
 
-  Tokenizer tokenizer;
-  std::shared_ptr<Node> root;
-};
+  return ParseStatus::OK;
+}
+
+Token Parser::get_current_token() {
+  return tokenizer.current_token;
+}
+
+void Parser::dot(std::string_view label) {
+  dot_recurse(root, label);
+}
+
+void Parser::dot_recurse(std::shared_ptr<Node> node, std::string_view label) {
+  std::cout << "digraph tree {\n";
+
+  std::cout << "\tlabel=\"" << label << "\"\n";
+  std::cout << "\tlabelloc=\"t\";\n";
+  std::cout << "\tfontname=\"Helvetica,Arial,sans-serif\"\n";
+  dot_add_label(node);
+  dot_add_path(node);
+  std::cout << "}\n";
+}
+
+void Parser::dot_add_label(std::shared_ptr<Node> node) {
+  if (node) {
+    if (node.get()->kind == NodeKind::ID || node.get()->kind == NodeKind::NOT || node.get()->kind == NodeKind::OPERATOR) {
+      std::cout << "\t" << (size_t)node.get() << " [label=\"" << node.get()->token.value_or(Token{TokenKind::UNKNOWN, "Unknown"}).text << "\" shape=\"plain\" fontsize=\"18\" fontcolor=\"orangered3\"]\n";
+    } else {
+      std::cout << "\t" << (size_t)node.get() << " [label=\"EXPR\" shape=\"box\"]\n";
+    }
+  }
+
+  for (auto i : node.get()->children) {
+    dot_add_label(i);
+  }
+}
+
+void Parser::dot_add_path(std::shared_ptr<Node> node) {
+  if (std::shared_ptr<Node> spt = node.get()->parent.lock()) {
+    std::cout << "\t" << (size_t)spt.get() << " -> " << (size_t)node.get() << "\n";
+  }
+  for (auto i : node.get()->children) {
+    dot_add_path(i);
+  }
+}
 
 #endif
