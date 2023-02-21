@@ -1,7 +1,4 @@
 
-// ez-search "not (cats or dogs)"
-// ez-search "not cats and not dogs"
-
 #include "parser.h"
 
 int main(int argc, char** argv) {
@@ -19,7 +16,7 @@ int main(int argc, char** argv) {
       auto token = p.get_current_token();
       std::cerr << "Invalid Token: " << token.text << '\n';
     } else if (status == ParseStatus::NO_CLOSE_PAREN) {
-      std::cerr << "Missing a closing parenthases\n";
+      std::cerr << "Missing a closing parenthasis\n";
     } else if (status == ParseStatus::UNKNOWN) {
       std::cerr << "Encountered an unknown error\n";
     }
