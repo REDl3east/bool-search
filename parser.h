@@ -66,7 +66,7 @@ public:
       i.second = input.find(i.first) != std::string_view::npos;
     }
 
-    return true;
+    return eval_tree(root);
   }
 
   Token get_current_token();
@@ -76,6 +76,10 @@ public:
 
 private:
   ParseStatus parse_expr(std::shared_ptr<Node> node, int precedence = 0);
+
+  bool eval_tree(std::shared_ptr<Node> node){
+    return true;
+  }
 
   void dot_recurse(std::shared_ptr<Node> node, std::string_view label, std::stringstream& ss);
   void dot_add_label(std::shared_ptr<Node> node, std::stringstream& ss);
