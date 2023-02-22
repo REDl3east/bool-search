@@ -24,7 +24,13 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  bool eval = p.eval(argv[2]);
+  bool result;
+  EvalStatus eval_status = p.eval(argv[2], &result);
+
+  if(eval_status != EvalStatus::OK){
+    std::cerr << "There was an error after eval\n";
+    return 1;
+  }
 
   auto& id_map = p.get_id_map();
 
@@ -36,7 +42,7 @@ int main(int argc, char** argv) {
     std::cout << i.first << ": " << (i.second ? "true" : "false") << '\n';
   }
 
-  std::cout << "\nresult: " << (eval ? "true" : "false") << '\n';
+  std::cout << "\nresult: " << (result ? "true" : "false") << '\n';
 
   // std::string dot_graph = p.dot(input);
   // std::cout << dot_graph;
