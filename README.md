@@ -19,6 +19,7 @@ De Morgan's laws commonly apply to text searching using Boolean operators AND, O
 **Search B**: (NOT cats) AND (NOT dogs)  
 
 The corpus of documents containing "cats" or "dogs" can be represented by four documents:  
+
 **Document 1**: Contains only the word "cats".  
 **Document 2**: Contains only "dogs".  
 **Document 3**: Contains both "cats" and "dogs".  
