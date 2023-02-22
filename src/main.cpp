@@ -4,7 +4,7 @@
 int main(int argc, char** argv) {
   if (argc != 3) {
     std::cerr << "Expected 2 arguement, got " << argc - 1 << '\n';
-    std::cerr << "Usage: " << argv[0] << "INPUT SEARCH\n";
+    std::cerr << "Usage: " << argv[0] << " INPUT SEARCH\n";
     return 1;
   }
 
