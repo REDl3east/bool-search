@@ -269,7 +269,6 @@ TEST(ParserTest, ParserEvalTest) {
       "I love cheese, not chicken",
       true /**/
   );
-
   parser_eval_test(
       "(",
       {
@@ -278,7 +277,6 @@ TEST(ParserTest, ParserEvalTest) {
       "I have ( paren haha",
       true /**/
   );
-
   parser_eval_test(
       ")",
       {
@@ -287,7 +285,6 @@ TEST(ParserTest, ParserEvalTest) {
       "I love cheese, not chicken",
       false /**/
   );
-
   parser_eval_test(
       "not and",
       {
@@ -373,6 +370,104 @@ TEST(ParserTest, ParserEvalTest) {
           "\\(ddd",
       },
       "doggy! I love you so much! here I have a \\(ddd what do i do?",
+      true /**/
+  );
+  parser_eval_test(
+      "dog and cat and fish and bear and pizza and cake or cheese and cracker",
+      {
+          "dog",
+          "cat",
+          "fish",
+          "bear",
+          "pizza",
+          "cake",
+          "cheese",
+          "cracker",
+      },
+      "I want a dog that is friends with a cat and fish and bear and a pizza with a cake",
+      true /**/
+  );
+  parser_eval_test(
+      "dog and cat and fish and bear and pizza and cake or cheese and cracker",
+      {
+          "dog",
+          "cat",
+          "fish",
+          "bear",
+          "pizza",
+          "cake",
+          "cheese",
+          "cracker",
+      },
+      "I love cheese and crackers",
+      true /**/
+  );
+  parser_eval_test(
+      "dog and cat and fish and bear and pizza and cake or cheese and cracker",
+      {
+          "dog",
+          "cat",
+          "fish",
+          "bear",
+          "pizza",
+          "cake",
+          "cheese",
+          "cracker",
+      },
+      "I want a lot of donuts!!!",
+      false /**/
+  );
+  parser_eval_test(
+      "( dog or cat ) and ( fish or bear or pizza ) and ( cake  or cheese ) and cracker",
+      {
+          "dog",
+          "cat",
+          "fish",
+          "bear",
+          "pizza",
+          "cake",
+          "cheese",
+          "cracker",
+      },
+      "I have a dog that likes pizza or cake, with a side of crackers.",
+      true /**/
+  );
+  parser_eval_test(
+      "( dog or cat ) and ( fish or bear or pizza ) and ( cake  or cheese ) and cracker",
+      {
+          "dog",
+          "cat",
+          "fish",
+          "bear",
+          "pizza",
+          "cake",
+          "cheese",
+          "cracker",
+      },
+      "I have a cat that likes fish and cheese, with a side of crackers.",
+      true /**/
+  );
+  parser_eval_test(
+      "( dog or cat ) and ( fish or bear or pizza ) and ( cake  or cheese ) and cracker",
+      {
+          "dog",
+          "cat",
+          "fish",
+          "bear",
+          "pizza",
+          "cake",
+          "cheese",
+          "cracker",
+      },
+      "I have a dog that likes pizza or cake, with a side of love.",
+      false /**/
+  );
+  parser_eval_test(
+      "#$@!%",
+      {
+          "#$@!%",
+      },
+      "What the #$@!% David Blaine",
       true /**/
   );
 }
