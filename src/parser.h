@@ -263,17 +263,22 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
   } else if (current_token.kind == TokenKind::OPEN_PAREN) {
     created_node = std::make_shared<Node>(node, NodeKind::EXPR);
     tokenizer.next();
-    auto status = parse_expr(created_node);
-    if (status != ParseStatus::OK) {
-      return status;
+
+    if (tokenizer.current_token.kind == TokenKind::END_OF) {
+      created_node = std::make_shared<Node>(node, NodeKind::ID, current_token);
+      id_map.insert({current_token.text, false});
+    } else {
+      auto status = parse_expr(created_node);
+      if (status != ParseStatus::OK) {
+        return status;
+      }
+
+      Token close_paren_token = tokenizer.current_token;
+
+      if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
+        return ParseStatus::NO_CLOSE_PAREN;
+      }
     }
-
-    Token close_paren_token = tokenizer.current_token;
-
-    if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
-      return ParseStatus::NO_CLOSE_PAREN;
-    }
-
   } else {
     return ParseStatus::INVALID_TOKEN;
   }
