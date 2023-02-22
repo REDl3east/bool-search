@@ -46,3 +46,5 @@ ctest --output-on-failure
 
 ### TODO
 - add test for failed parsing
+- add precendence explaination
+- add examples
