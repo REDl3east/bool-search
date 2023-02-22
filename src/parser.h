@@ -24,22 +24,10 @@ struct Node {
   Node(std::weak_ptr<Node> parent, NodeKind kind, Token token) : parent(parent), kind(kind), token(token) {}
   Node(NodeKind kind) : kind(kind) {}
 
-  void add_child(std::weak_ptr<Node> parent, NodeKind kind) {
-    children.push_back(std::make_unique<Node>(parent, kind));
-  }
-
-  void add_child(std::weak_ptr<Node> parent, NodeKind kind, Token token) {
-    children.push_back(std::make_unique<Node>(parent, kind, token));
-  }
-
-  void add_child(NodeKind kind) {
-    children.push_back(std::make_unique<Node>(kind));
-  }
-
-  void add_child(std::weak_ptr<Node> parent, std::shared_ptr<Node> child) {
-    children.push_back(child);
-    child->parent = parent;
-  }
+  void add_child(std::weak_ptr<Node> parent, NodeKind kind);
+  void add_child(std::weak_ptr<Node> parent, NodeKind kind, Token token);
+  void add_child(NodeKind kind);
+  void add_child(std::weak_ptr<Node> parent, std::shared_ptr<Node> child);
 
   NodeKind kind;
   std::weak_ptr<Node> parent;
@@ -48,6 +36,23 @@ struct Node {
   // for terminal nodes
   std::optional<Token> token;
 };
+
+void Node::add_child(std::weak_ptr<Node> parent, NodeKind kind) {
+  children.push_back(std::make_unique<Node>(parent, kind));
+}
+
+void Node::add_child(std::weak_ptr<Node> parent, NodeKind kind, Token token) {
+  children.push_back(std::make_unique<Node>(parent, kind, token));
+}
+
+void Node::add_child(NodeKind kind) {
+  children.push_back(std::make_unique<Node>(kind));
+}
+
+void Node::add_child(std::weak_ptr<Node> parent, std::shared_ptr<Node> child) {
+  children.push_back(child);
+  child->parent = parent;
+}
 
 enum class ParseStatus {
   OK,
