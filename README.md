@@ -37,7 +37,7 @@ A similar evaluation can be applied to show that the following two searches will
 
 ## Command Line
 ```bash
-ez-search INPUT SEARCH
+ez-search EXPR [FILE]
 ```
 
 ## Running Tests
@@ -49,3 +49,4 @@ ctest --output-on-failure
 - add test for failed parsing
 - add precendence explaination
 - add examples
+- add install instructions

@@ -470,4 +470,22 @@ TEST(ParserTest, ParserEvalTest) {
       "What the #$@!% David Blaine",
       true /**/
   );
+  parser_eval_test(
+      "and and and or or or or",
+      {
+          "and",
+          "or",
+      },
+      "There is pizza and burgers",
+      true /**/
+  );
+  parser_eval_test(
+      "and and and or or or or",
+      {
+          "and",
+          "or",
+      },
+      "There is pizza burgers",
+      false /**/
+  );
 }
