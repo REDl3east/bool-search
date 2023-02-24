@@ -86,5 +86,4 @@ The command line takes an EXPR parameter. This is where you define the boolean e
 
 ### TODO
 - add test for failed parsing
-- add install instructions
 
