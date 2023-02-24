@@ -17,7 +17,7 @@ sudo make install
 ```
 bool-search - A command line tool that searches things with boolean expressions.
 
-Usage: ./bin/bool-search  [-rh] EXPR [FILE]...
+Usage: bool-search  [-rh] EXPR [FILE]...
   -r, --recursive           recusivly search given directories
   -h, --help                display this help and exit
   EXPR                      The expression that is used to search
