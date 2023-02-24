@@ -35,7 +35,7 @@ A similar evaluation can be applied to show that the following two searches will
 **Search D**: (NOT cats) OR (NOT dogs).  
 
 ### Informal proof of De Morgan's Law
-De Morgan's Law can be informally proven by using the `bool-search` command along with the `find` command. There are some sample text files in the test/sample-text directory. We will use that for the proof.
+De Morgan's Law can be informally proven by using the `bool-search` command along with the `find` command. There are some sample text files in the `test/sample-text` directory. We will use that for the proof.
 ```bash
 bool-search -r "not ( cats or dogs )" sample-text/ > test1.txt
 bool-search -r "not cats and not dogs" sample-text/ > test2.txt
