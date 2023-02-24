@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(bool-search VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 20)
-
 option(BOOL_SEARCH_COMPILE_TESTS "Weather or not to compile the tests. Will install gtest." ON)
 
 add_executable(bool-search
@@ -14,6 +12,7 @@ target_include_directories(bool-search PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/libs
   ${CMAKE_CURRENT_SOURCE_DIR}/libs/argtable3
 )
+set_property(TARGET bool-search PROPERTY CXX_STANDARD 17)
 set_target_properties(bool-search PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 if(BOOL_SEARCH_COMPILE_TESTS)
