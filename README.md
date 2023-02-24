@@ -36,7 +36,7 @@ A similar evaluation can be applied to show that the following two searches will
 
 ## Usage
 ```
-./bin/bool-search - A command line tool that searches things with boolean expressions.
+bool-search - A command line tool that searches things with boolean expressions.
 
 Usage: ./bin/bool-search  [-rh] EXPR [FILE]...
   -r, --recursive           recusivly search given directories
