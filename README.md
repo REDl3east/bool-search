@@ -78,10 +78,5 @@ ctest --output-on-failure
 
 ### TODO
 - add test for failed parsing
-<<<<<<< HEAD
 - add install instructions
-=======
-- add precendence explaination
-- add examples
-- add install instructions
->>>>>>> d043e9192077b781741d5d4920dd7f3d0e0ef0ad
+
