@@ -238,20 +238,15 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
 
       tokenizer.next();
 
-      if (tokenizer.current_token.kind == TokenKind::END_OF) {
-        created_node = std::make_shared<Node>(node, NodeKind::ID, tokenizer.current_token);
-        id_map.insert({tokenizer.current_token.text, false});
-      } else {
-        auto status = parse_expr(expr_node);
-        if (status != ParseStatus::OK) {
-          return status;
-        }
+      auto status = parse_expr(expr_node);
+      if (status != ParseStatus::OK) {
+        return status;
+      }
 
-        Token close_paren_token = tokenizer.current_token;
+      Token close_paren_token = tokenizer.current_token;
 
-        if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
-          return ParseStatus::NO_CLOSE_PAREN;
-        }
+      if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
+        return ParseStatus::NO_CLOSE_PAREN;
       }
 
     } else if (id_or_paren_token.kind == TokenKind::END_OF) {
@@ -264,21 +259,17 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
     created_node = std::make_shared<Node>(node, NodeKind::EXPR);
     tokenizer.next();
 
-    if (tokenizer.current_token.kind == TokenKind::END_OF) {
-      created_node = std::make_shared<Node>(node, NodeKind::ID, current_token);
-      id_map.insert({current_token.text, false});
-    } else {
-      auto status = parse_expr(created_node);
-      if (status != ParseStatus::OK) {
-        return status;
-      }
-
-      Token close_paren_token = tokenizer.current_token;
-
-      if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
-        return ParseStatus::NO_CLOSE_PAREN;
-      }
+    auto status = parse_expr(created_node);
+    if (status != ParseStatus::OK) {
+      return status;
     }
+
+    Token close_paren_token = tokenizer.current_token;
+
+    if (close_paren_token.kind != TokenKind::CLOSE_PAREN) {
+      return ParseStatus::NO_CLOSE_PAREN;
+    }
+
   } else {
     return ParseStatus::INVALID_TOKEN;
   }
@@ -290,8 +281,7 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
     return ParseStatus::OK;
   }
 
-  int new_precedence = tokenizer.current_token.kind == TokenKind::OR ? 0 : tokenizer.current_token.kind == TokenKind::AND ? 1
-                                                                                                                          : -1;
+  int new_precedence = tokenizer.current_token.kind == TokenKind::OR ? 0 : tokenizer.current_token.kind == TokenKind::AND ? 1 : -1;
 
   if (new_precedence == -1) {
     return ParseStatus::INVALID_TOKEN;
