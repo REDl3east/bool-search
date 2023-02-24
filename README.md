@@ -1,6 +1,6 @@
 # bool-search
 
-A command line tool that searches things with boolean expressions. Primarily inspired by a section in the [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws) Wikipedia article.
+A command line tool that searches things with boolean expressions. Built with C++17! Primarily inspired by a section in the [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws) Wikipedia article.
 
 ## Quick Start
 ```bash
