@@ -89,113 +89,7 @@ public:
 
 private:
   ParseStatus parse_expr(std::shared_ptr<Node> node, int precedence = 0);
-
-  EvalStatus eval_tree(std::shared_ptr<Node> node, bool* value) {
-    if (!node) {
-      std::cerr << "node is null value\n";
-      return EvalStatus::ERR;
-    }
-    Node* node_ptr = node.get();
-    if (node_ptr->children.size() == 1) {
-      if (eval_tree(node_ptr->children[0], value) != EvalStatus::OK) return EvalStatus::ERR;
-    } else if (node_ptr->kind == NodeKind::ID) {
-      if (!node_ptr->token.has_value()) {
-        std::cerr << "token has no value\n";
-        return EvalStatus::ERR;
-      }
-      *value = id_map.at(node_ptr->token.value().text);
-    } else if (node_ptr->children.size() == 2 && node_ptr->children[0] && node_ptr->children[1]) {
-      if (node_ptr->children[0].get()->kind == NodeKind::NOT && (node_ptr->children[1].get()->kind == NodeKind::EXPR || node_ptr->children[1].get()->kind == NodeKind::ID)) {
-        if (eval_tree(node_ptr->children[1], value) != EvalStatus::OK) return EvalStatus::ERR;
-        *value = !(*value);
-      } else {
-        std::cerr << "Don't know how to handle node\n";
-        return EvalStatus::ERR;
-      }
-    } else if (node_ptr->kind == NodeKind::EXPR && node_ptr->children.size() % 2 != 0 && node_ptr->children.size() >= 3) {
-      bool result;
-      bool first_value;
-      bool second_value;
-
-      std::shared_ptr<Node> first_node    = node_ptr->children[0];
-      std::shared_ptr<Node> operator_node = node_ptr->children[1];
-      std::shared_ptr<Node> second_node   = node_ptr->children[2];
-
-      if (!first_node || !operator_node || !second_node) {
-        std::cerr << "Don't know how to handle node\n";
-        return EvalStatus::ERR;
-      }
-
-      if (eval_tree(first_node, &first_value) != EvalStatus::OK) return EvalStatus::ERR;
-      if (eval_tree(second_node, &second_value) != EvalStatus::OK) return EvalStatus::ERR;
-
-      if (!operator_node.get()->token.has_value()) {
-        std::cerr << "Don't know how to handle node\n";
-        return EvalStatus::ERR;
-      }
-
-      Token operator_token = operator_node.get()->token.value();
-
-      if (operator_token.kind == TokenKind::AND) {
-        result = first_value && second_value;
-      } else if (operator_token.kind == TokenKind::OR) {
-        result = first_value || second_value;
-      } else {
-        std::cerr << "Don't know how to handle node\n";
-        return EvalStatus::ERR;
-      }
-
-      if (node_ptr->children.size() == 3) {
-        *value = result;
-        return EvalStatus::OK;
-      }
-
-      int index = 3;
-      // no bound checking needed as it is done above
-      operator_node = node_ptr->children[index++];
-      first_node    = node_ptr->children[index++];
-
-      if (!first_node || !operator_node) {
-        std::cerr << "Don't know how to handle node\n";
-        return EvalStatus::ERR;
-      }
-
-      while (1) {
-        if (eval_tree(first_node, &first_value) != EvalStatus::OK) return EvalStatus::ERR;
-
-        if (!operator_node.get()->token.has_value()) {
-          std::cerr << "Don't know how to handle node\n";
-          return EvalStatus::ERR;
-        }
-
-        operator_token = operator_node.get()->token.value();
-
-        if (operator_token.kind == TokenKind::AND) {
-          result = result && first_value;
-        } else if (operator_token.kind == TokenKind::OR) {
-          result = result || first_value;
-        } else {
-          std::cerr << "Don't know how to handle node\n";
-          return EvalStatus::ERR;
-        }
-
-        if (node_ptr->children.size() <= index) break;
-
-        operator_node = node_ptr->children[index++];
-        first_node    = node_ptr->children[index++];
-
-        if (!first_node || !operator_node) {
-          std::cerr << "Don't know how to handle node\n";
-          return EvalStatus::ERR;
-        }
-      }
-      *value = result;
-    } else {
-      std::cerr << "Don't know how to handle node\n";
-      return EvalStatus::ERR;
-    }
-    return EvalStatus::OK;
-  }
+  EvalStatus eval_tree(std::shared_ptr<Node> node, bool* value);
 
   void dot_recurse(std::shared_ptr<Node> node, std::string_view label, std::stringstream& ss);
   void dot_add_label(std::shared_ptr<Node> node, std::stringstream& ss);
@@ -313,6 +207,113 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
   }
 
   return ParseStatus::OK;
+}
+
+EvalStatus Parser::eval_tree(std::shared_ptr<Node> node, bool* value) {
+  if (!node) {
+    std::cerr << "node is null value\n";
+    return EvalStatus::ERR;
+  }
+  Node* node_ptr = node.get();
+  if (node_ptr->children.size() == 1) {
+    if (eval_tree(node_ptr->children[0], value) != EvalStatus::OK) return EvalStatus::ERR;
+  } else if (node_ptr->kind == NodeKind::ID) {
+    if (!node_ptr->token.has_value()) {
+      std::cerr << "token has no value\n";
+      return EvalStatus::ERR;
+    }
+    *value = id_map.at(node_ptr->token.value().text);
+  } else if (node_ptr->children.size() == 2 && node_ptr->children[0] && node_ptr->children[1]) {
+    if (node_ptr->children[0].get()->kind == NodeKind::NOT && (node_ptr->children[1].get()->kind == NodeKind::EXPR || node_ptr->children[1].get()->kind == NodeKind::ID)) {
+      if (eval_tree(node_ptr->children[1], value) != EvalStatus::OK) return EvalStatus::ERR;
+      *value = !(*value);
+    } else {
+      std::cerr << "Don't know how to handle node\n";
+      return EvalStatus::ERR;
+    }
+  } else if (node_ptr->kind == NodeKind::EXPR && node_ptr->children.size() % 2 != 0 && node_ptr->children.size() >= 3) {
+    bool result;
+    bool first_value;
+    bool second_value;
+
+    std::shared_ptr<Node> first_node    = node_ptr->children[0];
+    std::shared_ptr<Node> operator_node = node_ptr->children[1];
+    std::shared_ptr<Node> second_node   = node_ptr->children[2];
+
+    if (!first_node || !operator_node || !second_node) {
+      std::cerr << "Don't know how to handle node\n";
+      return EvalStatus::ERR;
+    }
+
+    if (eval_tree(first_node, &first_value) != EvalStatus::OK) return EvalStatus::ERR;
+    if (eval_tree(second_node, &second_value) != EvalStatus::OK) return EvalStatus::ERR;
+
+    if (!operator_node.get()->token.has_value()) {
+      std::cerr << "Don't know how to handle node\n";
+      return EvalStatus::ERR;
+    }
+
+    Token operator_token = operator_node.get()->token.value();
+
+    if (operator_token.kind == TokenKind::AND) {
+      result = first_value && second_value;
+    } else if (operator_token.kind == TokenKind::OR) {
+      result = first_value || second_value;
+    } else {
+      std::cerr << "Don't know how to handle node\n";
+      return EvalStatus::ERR;
+    }
+
+    if (node_ptr->children.size() == 3) {
+      *value = result;
+      return EvalStatus::OK;
+    }
+
+    int index = 3;
+    // no bound checking needed as it is done above
+    operator_node = node_ptr->children[index++];
+    first_node    = node_ptr->children[index++];
+
+    if (!first_node || !operator_node) {
+      std::cerr << "Don't know how to handle node\n";
+      return EvalStatus::ERR;
+    }
+
+    while (1) {
+      if (eval_tree(first_node, &first_value) != EvalStatus::OK) return EvalStatus::ERR;
+
+      if (!operator_node.get()->token.has_value()) {
+        std::cerr << "Don't know how to handle node\n";
+        return EvalStatus::ERR;
+      }
+
+      operator_token = operator_node.get()->token.value();
+
+      if (operator_token.kind == TokenKind::AND) {
+        result = result && first_value;
+      } else if (operator_token.kind == TokenKind::OR) {
+        result = result || first_value;
+      } else {
+        std::cerr << "Don't know how to handle node\n";
+        return EvalStatus::ERR;
+      }
+
+      if (node_ptr->children.size() <= index) break;
+
+      operator_node = node_ptr->children[index++];
+      first_node    = node_ptr->children[index++];
+
+      if (!first_node || !operator_node) {
+        std::cerr << "Don't know how to handle node\n";
+        return EvalStatus::ERR;
+      }
+    }
+    *value = result;
+  } else {
+    std::cerr << "Don't know how to handle node\n";
+    return EvalStatus::ERR;
+  }
+  return EvalStatus::OK;
 }
 
 Token Parser::get_current_token() {
