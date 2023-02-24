@@ -34,6 +34,9 @@ A similar evaluation can be applied to show that the following two searches will
 **Search C**: NOT (cats AND dogs),  
 **Search D**: (NOT cats) OR (NOT dogs).  
 
+## Boolean Expression
+The command line takes an EXPR parameter. This is where you define the boolean expression that will be used to search files. There are five main keywords that are used to define expressions: and, or, not, (, ), and an identifier. In order for parentheses to register, they must be surrounded by spaces. The precendence of each operator goes like this: '()' first, 'not' second, 'and' third, and 'or' forth. The expression is evaluated in that order. So, "cat or dog and pig", the 'and' operation is done first. In, "cat and not dog or fish", the not operation is done first, then the and, and finally the 'or'. The identifier is a search term and can be any printable characters.
+
 ## Usage
 ```
 ./bin/bool-search - A command line tool that searches things with boolean expressions.
@@ -60,11 +63,13 @@ bool-search "not ( cats or dogs )" sample-text/dir1/random45.txt sample-text/ran
 bool-search "( not cats ) and ( not dogs ) or giraffes" sample-text/*
 
 # searches given directory recursibly
-bool-search -r "( not cats ) and ( not dogs )" sample-text
+bool-search -r "( not cats ) and ( not dogs )" sample-text/
 
 # searches via stdin
-printf "%s\n%s\n%s\n%s\n" cat dog shark cat | ../build/bin/bool-search "cat or dog"
+printf "%s\n%s\n%s\n%s\n" cat dog shark cat | bool-search "cat or dog"
 ```
+
+
 
 ## Running Tests
 ```bash
@@ -73,6 +78,4 @@ ctest --output-on-failure
 
 ### TODO
 - add test for failed parsing
-- add precendence explaination
-- add examples
 - add install instructions
