@@ -18,7 +18,7 @@ void parser_eval_test(std::string_view input, std::set<std::string_view> expecte
   auto eval_status = p.eval(search, &actual_value);
 
   ASSERT_EQ(eval_status, EvalStatus::OK) << "Eval failed with search: " << search;
-  ASSERT_EQ(expected_result, actual_value) << "Eval expected value does not match with actual value";
+  ASSERT_EQ(expected_result, actual_value) << "Eval expected value does not match with actual value. input: " << input;
 }
 
 TEST(ParserTest, ParserEvalTest) {
@@ -270,14 +270,6 @@ TEST(ParserTest, ParserEvalTest) {
       true /**/
   );
   parser_eval_test(
-      "(",
-      {
-          "(",
-      },
-      "I have ( paren haha",
-      true /**/
-  );
-  parser_eval_test(
       ")",
       {
           ")",
@@ -363,6 +355,18 @@ TEST(ParserTest, ParserEvalTest) {
       "there is a ( in here",
       true /**/
   );
+
+  parser_eval_test(
+      "dog and ( \\( or here )",
+      {
+          "dog",
+          "(",
+          "here",
+      },
+      "I love dogs :(",
+      true /**/
+  );
+
   parser_eval_test(
       "dog and \\(ddd and here",
       {
