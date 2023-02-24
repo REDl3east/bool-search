@@ -71,16 +71,7 @@ class Parser {
 public:
   Parser(std::string_view input);
   ParseStatus parse();
-
-  EvalStatus eval(std::string_view input, bool* value) {
-    for (auto& i : id_map) {
-      i.second = input.find(i.first) != std::string_view::npos;
-    }
-
-    *value = false;
-
-    return eval_tree(root, value);
-  }
+  EvalStatus eval(std::string_view input, bool* value);
 
   Token get_current_token();
   const std::unordered_map<std::string_view, bool>& get_id_map() { return id_map; }
@@ -207,6 +198,16 @@ ParseStatus Parser::parse_expr(std::shared_ptr<Node> node, int precedence) {
   }
 
   return ParseStatus::OK;
+}
+
+EvalStatus Parser::eval(std::string_view input, bool* value) {
+  for (auto& i : id_map) {
+    i.second = input.find(i.first) != std::string_view::npos;
+  }
+
+  *value = false;
+
+  return eval_tree(root, value);
 }
 
 EvalStatus Parser::eval_tree(std::shared_ptr<Node> node, bool* value) {
