@@ -54,16 +54,16 @@ When FILE is absent, read in input from standard input. Read from ".", if -r opt
 ## Examples
 ```bash
  # searches a single file
-bool-search "not ( cats or dogs )" sample-text/dir1/random111.txt
+bool-search "not ( cats or dogs ) and rabbit" sample-text/dir1/random111.txt
 
  # searches multiple file
-bool-search "not ( cats or dogs )" sample-text/dir1/random45.txt sample-text/random444.txt sample-text/random650.txt
+bool-search "not ( cats or not camels ) and dogs" sample-text/dir1/random45.txt sample-text/random444.txt sample-text/random650.txt
 
 # searches all files in a directory, skipping given directories
 bool-search "( not cats ) and ( not dogs ) or giraffes" sample-text/*
 
 # searches given directory recursibly
-bool-search -r "( not cats ) and ( not dogs )" sample-text/
+bool-search -r "not ( not cats or ( dogs or camels ) ) or shark" sample-text/
 
 # searches via stdin
 printf "%s\n%s\n%s\n%s\n" cat dog shark cat | bool-search "cat or dog"
