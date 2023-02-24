@@ -39,7 +39,7 @@ The command line takes an EXPR parameter. This is where you define the boolean e
 
 ## Usage
 ```
-./bin/bool-search - A command line tool that searches things with boolean expressions.
+bool-search - A command line tool that searches things with boolean expressions.
 
 Usage: ./bin/bool-search  [-rh] EXPR [FILE]...
   -r, --recursive           recusivly search given directories
@@ -78,4 +78,10 @@ ctest --output-on-failure
 
 ### TODO
 - add test for failed parsing
+<<<<<<< HEAD
 - add install instructions
+=======
+- add precendence explaination
+- add examples
+- add install instructions
+>>>>>>> d043e9192077b781741d5d4920dd7f3d0e0ef0ad
