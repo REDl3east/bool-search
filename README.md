@@ -9,6 +9,7 @@ cd build
 cmake -DBOOL_SEARCH_COMPILE_TESTS=ON -DCMAKE_BUILD_TYPE=Release ..
 make
 ctest --output-on-failure # run tests
+sudo make install
 ```
 
 
