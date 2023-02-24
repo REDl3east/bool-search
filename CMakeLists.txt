@@ -30,6 +30,7 @@ if(BOOL_SEARCH_COMPILE_TESTS)
   add_executable(test-eval
     ${CMAKE_CURRENT_SOURCE_DIR}/test/test_eval.cpp
   )
+  set_property(TARGET test-eval PROPERTY CXX_STANDARD 17)
   target_include_directories(test-eval PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
