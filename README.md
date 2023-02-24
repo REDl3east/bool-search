@@ -35,7 +35,7 @@ A similar evaluation can be applied to show that the following two searches will
 **Search D**: (NOT cats) OR (NOT dogs).  
 
 ## Boolean Expression
-The command line takes an EXPR parameter. This is where you define the boolean expression that will be used to search files. There are five main keywords that are used to define expressions: and, or, not, (, ), and an identifier. In order for parentheses to register, they must be surrounded by spaces. The precendence of each operator goes like this: '()' first, 'not' second, 'and' third, and 'or' forth. The expression is evaluated in that order. So, "cat or dog and pig", the 'and' operation is done first. In, "cat and not dog or fish", the not operation is done first, then the and, and finally the 'or'. The identifier is a search term and can be any printable characters.
+The command line takes an EXPR parameter. This is where you define the boolean expression that will be used to search files. There are six main keywords that are used to define expressions: 'and', 'or', 'not', '(', ')', and an identifier. In order for parentheses to register, they must be surrounded by spaces. The precendence of each operator goes like this: '()' first, 'not' second, 'and' third, and 'or' forth. The expression is evaluated in that order. So, "cat or dog and pig", the 'and' operation is done first. In, "cat and not dog or fish", the 'not' operation is done first, then the 'and', and finally the 'or'. The identifier is a search term and is defined to be any printable characters. If all you want an open parethesis to be an identifier, then you can escape it by doing the following: "\\(". An example would be: "main and not \\(".
 
 ## Usage
 ```
