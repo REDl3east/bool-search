@@ -1,6 +1,6 @@
-# ez-search
+# bool-search
 
-A simple cli search tool that was inspired by a section in the [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws) Wikipedia article.
+A command line tool that searches things with boolean expressions. Primarily inspired by a section in the [De Morgan's laws](https://en.wikipedia.org/wiki/De_Morgan%27s_laws) Wikipedia article.
 
 ## Quick Start
 ```bash
@@ -34,10 +34,36 @@ A similar evaluation can be applied to show that the following two searches will
 **Search C**: NOT (cats AND dogs),  
 **Search D**: (NOT cats) OR (NOT dogs).  
 
+## Usage
+```
+./bin/bool-search - A command line tool that searches things with boolean expressions.
 
-## Command Line
+Usage: ./bin/bool-search  [-rh] EXPR [FILE]...
+  -r, --recursive           recusivly search given directories
+  -h, --help                display this help and exit
+  EXPR                      The expression that is used to search
+  FILE                      The file or directory (if has -r option) to search from
+
+When FILE is absent, read in input from standard input. Read from ".", if -r option is specified.
+
+```
+
+## Examples
 ```bash
-ez-search EXPR [FILE]
+ # searches a single file
+bool-search "not ( cats or dogs )" sample-text/dir1/random111.txt
+
+ # searches multiple file
+bool-search "not ( cats or dogs )" sample-text/dir1/random45.txt sample-text/random444.txt sample-text/random650.txt
+
+# searches all files in a directory, skipping given directories
+bool-search "( not cats ) and ( not dogs ) or giraffes" sample-text/*
+
+# searches given directory recursibly
+bool-search -r "( not cats ) and ( not dogs )" sample-text
+
+# searches via stdin
+printf "%s\n%s\n%s\n%s\n" cat dog shark cat | ../build/bin/bool-search "cat or dog"
 ```
 
 ## Running Tests
