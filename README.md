@@ -6,14 +6,11 @@ A command line tool that searches things with boolean expressions. Primarily ins
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake -DBOOL_SEARCH_COMPILE_TESTS=ON -DCMAKE_BUILD_TYPE=Release ..
 make
+ctest --output-on-failure # run tests
 ```
 
-## Running Tests
-```bash
-ctest --output-on-failure
-```
 
 ## Usage
 ```
