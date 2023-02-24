@@ -10,9 +10,9 @@ cmake ..
 make
 ```
 
-### Excerpt from Wikipedia
+## Excerpt from Wikipedia
 
-## Text searching
+#### Text searching
 De Morgan's laws commonly apply to text searching using Boolean operators AND, OR, and NOT. Consider a set of documents containing the words "cats" and "dogs". De Morgan's laws hold that these two searches will return the same set of documents:  
 
 **Search A**: NOT (cats OR dogs)  
